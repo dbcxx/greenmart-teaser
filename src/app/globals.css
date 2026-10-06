@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  --color-soil: #2e2118;
+  --color-loam: #4a3627;
+  --color-forest: #1f4d2b;
+  --color-field: #2f7a3a;
+  --color-sprout: #7cb342;
+  --color-husk: #f3ecd9;
+  --color-dawn: #f0a35e;
+  --color-sky: #cfe5ee;
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-sans: var(--font-instrument), system-ui, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--color-husk);
+  color: var(--color-soil);
+  font-family: var(--font-sans);
+}
+
+:focus-visible { outline: 3px solid var(--color-dawn); outline-offset: 3px; }
+
+@keyframes sway {
+  0%, 100% { transform: skewX(0deg); }
+  50% { transform: skewX(-3deg); }
+}
+.sway { animation: sway 4.5s ease-in-out infinite; transform-origin: bottom center; }
+.sway-slow { animation-duration: 6.5s; }
+
+@keyframes nudge { 0%, 100% { transform: translateY(0); opacity: .7 } 50% { transform: translateY(6px); opacity: 1 } }
+.nudge { animation: nudge 1.8s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sway, .nudge { animation: none; }
+  html { scroll-behavior: auto; }
+}
