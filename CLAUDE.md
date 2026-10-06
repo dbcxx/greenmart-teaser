@@ -15,7 +15,8 @@ The full spec lives in `docs/PRD.md`. Read it before any feature work.
 - `npm run lint`
 
 ## Layout
-- `src/components/FieldIntro.tsx` — pinned 400vh scroll story: seeds → grass (3 parallax layers) → crops → wordmark
+- `src/components/FieldIntro.tsx` — the opening story: seeds → grass → crops → wordmark, then farm → GreenMart dispatch bike → partner store → your door, with captions explaining the brand and a chapter progress bar (tap to jump). Desktop (md+) is pinned (750vh), locked 1:1 to scroll, with Lenis smoothing the scroll; mobile is one 100svh screen that autoplays. The world is a 3-panel strip panned with transforms. Art lives in `src/components/story/art.tsx`.
+- Smoothness rules for the intro: no inner-SVG transforms that run continuously (sway lives on the `<svg>` element so it's composited); skip hidden blades; no `scrub` delay (Lenis handles smoothing).
 - `src/components/HowItWorks.tsx` — farm → app → table
 - `src/components/PickPath.tsx` + `WaitlistForm.tsx` — group picker and per-group form, referral confirmation
 - `src/components/Footer.tsx` — live counts (hidden until a group passes 50) + WhatsApp share
@@ -29,11 +30,14 @@ The full spec lives in `docs/PRD.md`. Read it before any feature work.
 - Copy is punchy and plain. Sentence case, no all-caps labels, no "→" on buttons.
 - Palette: soil `#2e2118`, forest `#1f4d2b`, field `#2f7a3a`, sprout `#7cb342`, husk `#f3ecd9`, dawn `#f0a35e`, sky `#cfe5ee`.
 
-## Next tasks (in order)
-1. Replace the JSON store with MySQL (`mysql2` or Prisma), keeping the `WaitlistStore` interface. Table `waitlist_signups` per PRD.
-2. Cloudflare Turnstile + IP rate limit in `joinWaitlist`.
-3. Welcome email via Resend; WhatsApp via Termii or Cloud API (behind env flags).
-4. `/admin` page behind a password env var: filter by group/state/category, CSV export.
-5. OG image (`opengraph-image.tsx`) showing the grass scene + wordmark; sitemap + Organization schema.
-6. Plausible/GA4 with scroll-depth events per scene.
-7. Swap the inline SVG wordmark for the real GreenMart logo from Figma (file `pCQR7G7rDS2PoxeMoIITxS`).
+## Integrations (all off until their env vars are set; see `.env.example`)
+- Store: `src/lib/store.ts` picks `store-mysql.ts` when `DATABASE_URL` is set, else the dev JSON file. Schema in `db/schema.sql`, apply with `npm run db:migrate`.
+- Anti-spam: Turnstile + per-IP limit (salted IP hash, 8/hour) in `src/lib/guard.ts`.
+- Welcome messages: `src/lib/notify.ts` (Resend email, Termii WhatsApp behind `WHATSAPP_ENABLED=1`), sent with `after()` so signups never wait on them.
+- `/admin`: `ADMIN_PASSWORD` login, filter by group/state/category, CSV export at `/admin/export`.
+- SEO: `opengraph-image.tsx` (grass scene + wordmark, shares geometry with `src/lib/field.ts`), `sitemap.ts`, `robots.ts`, Organization JSON-LD in `layout.tsx`.
+- Analytics: `components/Analytics.tsx` + `lib/analytics.ts`. Events: `Scene viewed` (soil, sprout, field, brand, how it works, pick your path, footer), `Path picked`, `Signup`.
+
+## Next tasks
+1. Run the MySQL store against a real database end to end (written and type-checked, not yet exercised).
+2. Swap the inline wordmark for the real GreenMart logo from Figma (file `pCQR7G7rDS2PoxeMoIITxS`).

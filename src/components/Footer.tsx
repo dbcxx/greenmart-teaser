@@ -2,7 +2,7 @@ import type { Group } from "@/lib/waitlist";
 
 const MIN_SHOWN = 50;
 
-export default function Footer({ counts }: { counts: Record<Group, number> }) {
+export default function Footer({ counts, siteUrl }: { counts: Record<Group, number>; siteUrl: string }) {
   const parts = (
     [
       ["farmer", "farmers"],
@@ -23,7 +23,7 @@ export default function Footer({ counts }: { counts: Record<Group, number> }) {
         </div>
         <a
           className="inline-block rounded-full bg-sprout px-5 py-3 font-semibold text-soil hover:bg-[#8fc552]"
-          href={`https://wa.me/?text=${encodeURIComponent("GreenMart is coming: buy fresh food straight from farmers. Join the waitlist: https://greenmart.ng")}`}
+          href={`https://wa.me/?text=${encodeURIComponent(`GreenMart is coming: buy fresh food straight from farmers. Join the waitlist: ${siteUrl}`)}`}
           target="_blank"
           rel="noopener noreferrer"
         >

@@ -1,6 +1,6 @@
 const STEPS = [
   { title: "Farmers list what they harvest", body: "Growers post fresh produce with fair prices they set themselves." },
-  { title: "GreenMart handles the rest", body: "Orders, payment and delivery run through one app. No middlemen." },
+  { title: "GreenMart handles the rest", body: "Orders, payment and delivery run through one app." },
   { title: "Food lands on your table", body: "Households, restaurants and caterers get it fresh, straight from the farm." },
 ];
 

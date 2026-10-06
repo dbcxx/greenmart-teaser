@@ -80,5 +80,6 @@ export type SignupRecord = SignupInput & {
   id: string;
   referralCode: string;
   referralCount: number;
+  ipHash?: string;
   createdAt: string;
 };

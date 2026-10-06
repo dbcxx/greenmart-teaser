@@ -3,6 +3,8 @@
 import { useEffect, useState, useTransition } from "react";
 import { joinWaitlist, type JoinResult } from "@/app/actions";
 import { CATEGORIES, NG_STATES, type Group } from "@/lib/waitlist";
+import { track } from "@/lib/analytics";
+import Turnstile from "./Turnstile";
 
 const SCALE: Record<Group, { label: string; options: string[] }> = {
   farmer: { label: "Farm size", options: ["Under 1 plot", "1–5 plots", "1–5 hectares", "Over 5 hectares"] },
@@ -22,9 +24,11 @@ function Field({ label, error, children }: { label: string; error?: string; chil
   );
 }
 
-export default function WaitlistForm({ group }: { group: Group }) {
+export default function WaitlistForm({ group, turnstileSiteKey }: { group: Group; turnstileSiteKey?: string }) {
   const [pending, start] = useTransition();
   const [result, setResult] = useState<JoinResult | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [copied, setCopied] = useState(false);
   const [meta, setMeta] = useState({ referredBy: "", utmSource: "", utmCampaign: "" });
 
   useEffect(() => {
@@ -51,8 +55,13 @@ export default function WaitlistForm({ group }: { group: Group }) {
       sellsOnline: sells ? f.get("sellsOnline") : undefined,
       consent: f.get("consent") === "on",
       ...meta,
+      turnstileToken,
     };
-    start(async () => setResult(await joinWaitlist(payload)));
+    start(async () => {
+      const res = await joinWaitlist(payload);
+      setResult(res);
+      if (res.ok && !res.duplicate) track("Signup", { group, referred: meta.referredBy ? "yes" : "no" });
+    });
   }
 
   if (result?.ok) {
@@ -71,8 +80,16 @@ export default function WaitlistForm({ group }: { group: Group }) {
           <a href={`https://wa.me/?text=${encodeURIComponent(share)}`} target="_blank" rel="noopener noreferrer" className="rounded-full bg-sprout px-5 py-2.5 font-semibold text-soil">
             Share on WhatsApp
           </a>
-          <button onClick={() => navigator.clipboard.writeText(link)} className="rounded-full border border-husk/50 px-5 py-2.5 font-semibold">
-            Copy link
+          <button
+            onClick={() =>
+              navigator.clipboard?.writeText(link).then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              })
+            }
+            className="rounded-full border border-husk/50 px-5 py-2.5 font-semibold"
+          >
+            {copied ? "Copied" : "Copy link"}
           </button>
         </div>
       </div>
@@ -141,6 +158,12 @@ export default function WaitlistForm({ group }: { group: Group }) {
         <span className="text-sm">Send me launch updates by email or WhatsApp. I can opt out any time.</span>
       </label>
       {errors.consent && <span className="-mt-3 text-sm text-[#b3261e] md:col-span-2">{errors.consent}</span>}
+      {turnstileSiteKey && <Turnstile siteKey={turnstileSiteKey} onToken={setTurnstileToken} />}
+      {errors.form && (
+        <p role="alert" className="rounded-lg bg-[#b3261e]/10 px-3 py-2 text-sm text-[#b3261e] md:col-span-2">
+          {errors.form}
+        </p>
+      )}
       <button type="submit" disabled={pending} className="rounded-full bg-forest px-6 py-3 font-semibold text-husk hover:bg-field disabled:opacity-60 md:col-span-2 md:justify-self-start">
         {pending ? "Joining…" : "Join the waitlist"}
       </button>
